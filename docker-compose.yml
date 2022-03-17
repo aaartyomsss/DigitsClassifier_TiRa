@@ -1,0 +1,21 @@
+version: '3'
+services:
+  frontend:
+    build: ./frontend
+    container_name: tira_frontend
+    ports:
+      - '3000:3000'
+    environment:
+      CHOKIDAR_USEPOLLING: 'true'
+    volumes:
+      - /app/node_modules
+      - ./frontend:/app
+    depends_on:
+      - backend
+  backend:
+    build: ./backend
+    container_name: tire_backend
+    volumes:
+      - ./backend:/app
+    ports:
+      - 8000:8000
