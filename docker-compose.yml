@@ -14,7 +14,7 @@ services:
       - backend
   backend:
     build: ./backend
-    container_name: tire_backend
+    container_name: tira_backend
     volumes:
       - ./backend:/app
     ports:
