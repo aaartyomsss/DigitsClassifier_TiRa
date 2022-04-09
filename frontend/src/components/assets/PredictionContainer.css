@@ -1,0 +1,13 @@
+.prediction-container {
+  padding: 10rem 0;
+}
+
+.helper-text {
+  text-align: center;
+  font-weight: 600;
+}
+
+.prediction {
+  text-align: center;
+  font-size: 5rem;
+}

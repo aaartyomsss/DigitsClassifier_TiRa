@@ -1,5 +1,6 @@
 import React from 'react';
 import CanvasView from './views/CanvasView';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import './App.css';
 
 /* Component resoponsible for bringing everything together

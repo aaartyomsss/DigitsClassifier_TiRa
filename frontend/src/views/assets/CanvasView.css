@@ -1,0 +1,7 @@
+.canvas-view-container {
+  display: flex;
+  flex-direction: row;
+  width: 80vw;
+  justify-content: space-evenly;
+  align-items: center;
+}

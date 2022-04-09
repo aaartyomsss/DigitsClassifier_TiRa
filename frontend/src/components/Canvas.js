@@ -1,17 +1,19 @@
 import React, { useRef } from 'react';
 import { SketchField, Tools } from 'react-sketch';
 import postRequst from '../utils/postFetch';
+import { ENDPOINT_URLS } from '../constants';
+import { Button } from 'react-bootstrap';
 import './assets/Canvas.css';
 
 // Main component responsible for user handwriting
-const Canvas = () => {
+const Canvas = ({ setPrediction, setEvaluating }) => {
   const imageCaptureRef = useRef(null);
 
   // Captures the img and sends it to the server in order to make evaluation
   const handleSubmit = async (e) => {
     // Prevents refresh of page
     e.preventDefault();
-
+    setEvaluating(true);
     const img = await imageCaptureRef.current.toDataURL({
       format: 'base64',
       quality: 0.5,
@@ -24,8 +26,9 @@ const Canvas = () => {
     };
 
     // Sending base64 img to the server and receiving the response
-    const res = await postRequst('upload-image/', data);
-    console.log(res);
+    const prediction = await postRequst(ENDPOINT_URLS.uploadImage, data);
+    setEvaluating(false);
+    setPrediction(prediction);
   };
 
   return (
@@ -35,13 +38,16 @@ const Canvas = () => {
           width="140px"
           height="140px"
           tool={Tools.Pencil}
-          lineColor="black"
+          lineColor="white"
           lineWidth={3}
-          backgroundColor="white"
+          backgroundColor="black"
+          aria-label="sketch-field"
           ref={imageCaptureRef}
         />
       </div>
-      <button onClick={handleSubmit}>Submit</button>
+      <Button variant="primary" onClick={handleSubmit}>
+        Submit
+      </Button>
     </div>
   );
 };

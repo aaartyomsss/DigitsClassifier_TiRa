@@ -2,7 +2,7 @@ import { BACKEND_URL } from '../constants';
 
 const postRequst = async (realtiveUrl, data) => {
   const url = `${BACKEND_URL}/${realtiveUrl}`;
-  const res = fetch(url, {
+  const res = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-type': 'application/json',
