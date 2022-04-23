@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { SketchField, Tools } from 'react-sketch';
 import postRequst from '../utils/postFetch';
 import { ENDPOINT_URLS } from '../constants';
@@ -8,6 +8,9 @@ import './assets/Canvas.css';
 // Main component responsible for user handwriting
 const Canvas = ({ setPrediction, setEvaluating }) => {
   const imageCaptureRef = useRef(null);
+  // To simplify rerendering of the canvas to clear it from previous state
+  // May not be the most efficient solution, but rather clean and simple
+  const [rerenderKey, setRerenderKey] = useState(1);
 
   // Captures the img and sends it to the server in order to make evaluation
   const handleSubmit = async (e) => {
@@ -28,7 +31,8 @@ const Canvas = ({ setPrediction, setEvaluating }) => {
     // Sending base64 img to the server and receiving the response
     const prediction = await postRequst(ENDPOINT_URLS.uploadImage, data);
     setEvaluating(false);
-    setPrediction(prediction);
+    setPrediction(prediction.result);
+    setRerenderKey((prevKey) => prevKey + 1);
   };
 
   return (
@@ -43,6 +47,7 @@ const Canvas = ({ setPrediction, setEvaluating }) => {
           backgroundColor="black"
           aria-label="sketch-field"
           ref={imageCaptureRef}
+          key={rerenderKey}
         />
       </div>
       <Button variant="primary" onClick={handleSubmit}>

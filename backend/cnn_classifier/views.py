@@ -14,10 +14,11 @@ class UploadImageView(APIView):
 
   def post(self, request, format=None):
       base64_image = request.data.get('base64_image')
-      print(base64_image)
       image_file, other = get_image_from_data_url(base64_image)
+      (image_name, image_extension) = other
       # Saving image so that in the future data could be used to
       # train model even more
+
       UserDrawnImage.objects.create(image=image_file)
 
       img = Image.open(image_file).convert('L')
@@ -33,7 +34,7 @@ class UploadImageView(APIView):
       ## Neural network accepts array of data and returns array of predictions
       result = cnn.predict([data])
       # Sending back the predicted result
-      return Response(result[0])
+      return Response({'result': result[0], 'image_name': image_name})
 
 
 class RetrainNeuralNetwork(APIView):
