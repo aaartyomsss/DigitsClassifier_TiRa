@@ -1,4 +1,3 @@
-from matplotlib import testing
 from cnn_classifier.neural_network.neural_network import NeuralNetwork
 import time
 import os

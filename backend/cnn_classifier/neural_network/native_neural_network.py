@@ -1,4 +1,4 @@
-from cProfile import label
+from django.conf import settings
 import pathlib
 import os
 import numpy as np # Package that simplifies linear algebra
@@ -6,7 +6,7 @@ import pandas as pd # Allows to process better CSV data
 
 class NativeNeuralNetwork:
 
-    def __init__(self):
+    def __init__(self, alpha, hidden_size, batch_size, training_size):
         path = pathlib.Path(__file__).parent.resolve()
         # The data provided is already in required format, aka pixels and their value
         # So we do not need to covert it
@@ -24,10 +24,12 @@ class NativeNeuralNetwork:
         self.test_X = test_data.drop(['label'], axis=1).values / 255
 
         # Next we hardcore some params that will later be initilized via constructor
-        self.alpha = 0.015
-        self.hidden_size = 40
+        self.alpha = alpha
+        self.hidden_size = hidden_size
         self.pixels_per_image = 784
         self.output_layer_size = 10
+        self.batch_size = batch_size
+        self.training_size = training_size
         np.random.seed(1)
 
         # first matrix of weights that connects input layer with hidden layer of size 40
@@ -36,6 +38,8 @@ class NativeNeuralNetwork:
         self.weights_1_2 =  0.2*np.random.random((self.hidden_size, self.output_layer_size)) - 0.1
     
     def train_network(self, iterations):
+        # TODO: As an optimasation stop training when error gets bigger multiple times in a row
+
         # returns x in case x > 0 else 0. 
         # Possible due to the fact that true-false are can also be represented as 1 and 0 
         relu = lambda x: (x >= 0) * x 
@@ -46,8 +50,9 @@ class NativeNeuralNetwork:
             correct = 0
             # TODO: we limit training data due to testing purposes
             # In order to increase the speed of learning
-            for i in range(len(self.X[:1000])):
-                layer_0 = self.X[i:i+1]
+            for i in range(int(len(self.X[:self.training_size]) / self.batch_size)):
+                batch_start, batch_end = (i * self.batch_size, (i + 1) * self.batch_size)
+                layer_0 = self.X[batch_start:batch_end]
                 # We apply relu to set negative weights to zero in 
                 # order to avoid linearity between layers
                 layer_1 = relu(np.dot(layer_0, self.weights_0_1))
@@ -57,23 +62,24 @@ class NativeNeuralNetwork:
                 
                 layer_2 = np.dot(layer_1, self.weights_1_2)
 
-                correct += int(np.argmax(layer_2) == np.argmax(self.y[i:i+1]))
-
                 # Calculating how much our prediciton differs from the
                 # Actual result
-                error += np.sum((self.y[i:i+1] - layer_2) ** 2)
+                error += np.sum((self.y[batch_start:batch_end] - layer_2) ** 2)
+                
+                for k in range(self.batch_size):
+                    correct += int(np.argmax(layer_2[k:k + 1]) \
+                                == np.argmax(self.y[batch_start + k:batch_end + k +1]))
+                    # This block is the part of the training algorithm that
+                    # is called backpropagation. More details can be found in
+                    # documentation related to native implementation
+                    layer_2_delta = (self.y[batch_start:batch_end] - layer_2) / self.batch_size
+                    layer_1_delta = layer_2_delta.dot(self.weights_1_2.T) * relu2deriv(layer_1)
 
-                # This block is the part of the training algorithm that
-                # is called backpropagation. More details can be found in
-                # documentation related to native implementation
-                layer_2_delta = self.y[i:i+1] - layer_2
-                layer_1_delta = layer_2_delta.dot(self.weights_1_2.T) * relu2deriv(layer_1)
+                    layer_1_delta *= dropout_mask
 
-                layer_1_delta *= dropout_mask
-
-                self.weights_1_2 += self.alpha * layer_1.T.dot(layer_2_delta)
-                self.weights_0_1 += self.alpha * layer_0.T.dot(layer_1_delta)
-
+                    self.weights_1_2 += self.alpha * layer_1.T.dot(layer_2_delta)
+                    self.weights_0_1 += self.alpha * layer_0.T.dot(layer_1_delta)
+            print(error)
 
     def test_network(self):
         correct = 0
@@ -90,6 +96,15 @@ class NativeNeuralNetwork:
             correct += int(np.argmax(layer_2) == np.argmax(self.test_y[i:i+1]))
         return (correct / test_length) * 100
 
+    def tanh(x):
+        return np.tanh(x)
+
+    def tanh2deriv(output):
+        return 1 - (output ** 2)
+
+    def softmax(x):
+        temp = np.exp(x)
+        return temp / np.sum(temp, axis=1, keepdims=True)
     
     def predict(self, image):
         relu = lambda x: (x >= 0) * x 
@@ -98,6 +113,27 @@ class NativeNeuralNetwork:
         layer_2 = np.dot(layer_1, self.weights_1_2)
         return np.argmax(layer_2)
         
+    def _get_saved_network_path(self, test_env=False):
+        if test_env:
+            return f'{settings.BASE_DIR}/native_network_test.npy'
+        return f'{settings.BASE_DIR}/native_network.npy'
+
+    def save_network(self, test_env=False):
+        with open(self._get_saved_network_path(test_env), 'wb') as f:
+            np.save(f, self.weights_0_1)
+            np.save(f, self.weights_1_2)
+            
+
+    def load_network(self, test_env=False):
+        with open(self._get_saved_network_path(test_env), 'rb') as f:
+            self.weights_0_1 = np.load(f)
+            self.weights_1_2 = np.load(f)
+
+    def remove_saved_network(self, test_env=False):
+        # /cnn_classifier/neural_network
+        os.remove(self._get_saved_network_path(test_env))
+
+
     def covert_labels(self, y):
         # As the output layer of our neural network will have 10 nodes
         # Each of which will represent certain probability => original

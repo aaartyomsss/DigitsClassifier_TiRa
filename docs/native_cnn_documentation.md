@@ -8,9 +8,46 @@ The neural network is currently rather simple. It does not use any complex algor
 
 So far, the accuracy of the network has not been the worst, however in the future it will be optimised both by improving the recognition and the speed of the training.
 
-### Backpropagation
+### Gradient decent and backpropagation
 
------todo-----
+> Reference: Neural Networks and Deep Learning by Michael Nielsen
+
+In order for the neural network to learn, we have to find the most suitable coefficients for its weights. We begin, by evaluating how well our NN performs by taking the squared difference between our predicted output and the actual one by computing the `quadratic cost function` also known as `mean squared error (MSE)`
+
+```python
+ error += np.sum((self.y[batch_start:batch_end] - layer_2) ** 2)
+```
+
+The larger the value - the worse our network performs. Of course in an ideal world the value should be equal to 0. So the goal of the training algorithm is to minimize the cost function. In our neural network it is done with the help of `gradient decent`.
+
+Well, why do we pick a gradient decent as an algorithm for finding the minima of the cost function? The answer lies in the fact that it is rather a simple method. We know that it is possible to find it by computing derivatives of the function and analysing them, but this task becomes intimidating when we deal with significant amount of variables... Which is usualy the case for neural networks.
+
+How does then the algorithm of gradient decent work and can be visualised? If we limit ourselves to 3 dimensions and imagine some function at a certain random starting point then all the algorithm does is at each step (iteration) it moves into the direction of the minima of a function.
+
+Let's have a look at the problem from the mathematical point, again considering 3 dimensions, where `z` is an output of a cost function and `x` & `y` are two variables affecting its value. Recall that we want to minize `z`, by changing the values of `x` and `y`. So it all boils down to the following:
+
+<img height='100' src="https://render.githubusercontent.com/render/math?math=\Delta z \approx \frac{\partial z}{\partial x} \Delta x +
+  \frac{\partial z}{\partial y} \Delta y">
+
+So we are interested in finding out the values of `delta x` and `delta y`, such that `delta z` will be negative.
+
+It is useful to rewrite this equation accordingly:
+<img height='100' src="https://render.githubusercontent.com/render/math?math=\nabla z \equiv \left( \frac{\partial z}{\partial x}, 
+  \frac{\partial z}{\partial y} \right)^T">
+
+Being the gradient vector.
+
+And we define the vector of changes:
+<img height='100' src="https://render.githubusercontent.com/render/math?math=\Delta v \equiv (\Delta x, \Delta y)^T">
+
+As a result whole equation can be rewritten as:
+<img height='100' src="https://render.githubusercontent.com/render/math?math=\Delta z \approx \nabla z \cdot \Delta v">
+
+From this equation we can also choose `delta v`, such that `delta z` will be negative. We suppose that:
+
+<img height='100' src="https://render.githubusercontent.com/render/math?math=\Delta v = -\alpha \nabla C">
+
+Where `alpha` is the learning rate (defined accordingly in our model). By plugging in this value into the equation above - it can be simply proven that `delta z` will always be negative. As a result, by applying those changes multiple amount of times - eventually we should arrive to the minima of a function. Following algorithm works for `N` amount of dimensions and procedure remains the same.
 
 ### Regularization
 

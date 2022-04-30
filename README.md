@@ -25,6 +25,8 @@ Main implementation of the CNN will be done with the help of **Andrew W. Trask's
 
 ### Running project locally
 
+> Nothing will work, if the data set is not present. I could not have left it in github repo, due to the size of files. Thus. you will have to download it yourself, via https://www.kaggle.com/datasets/oddrationale/mnist-in-csv , and put two of the files: mnist_test.csv and mnist_train.csv into neural_network directory.
+
 In order to run the project locally you should install `Docker`. It is used to ensure that the project will actually run on the local machine due to containerizing the app and making sure that proper environments are used and required packages are installed.
 
 After cloning repository, installing and starting docker enter the root directory of the project in shell (or terminal, depending on the OS) and run the following command
