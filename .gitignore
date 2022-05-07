@@ -1,6 +1,6 @@
 frontend/node_modules
 *.pyc
 backend/*.pyc
-.eslintcache
+frontend/.eslintcache
 backend/db.sqlite3
 backend/static/images

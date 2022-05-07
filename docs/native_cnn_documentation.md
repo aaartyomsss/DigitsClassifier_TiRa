@@ -49,6 +49,65 @@ From this equation we can also choose `delta v`, such that `delta z` will be neg
 
 Where `alpha` is the learning rate (defined accordingly in our model). By plugging in this value into the equation above - it can be simply proven that `delta z` will always be negative. As a result, by applying those changes multiple amount of times - eventually we should arrive to the minima of a function. Following algorithm works for `N` amount of dimensions and procedure remains the same.
 
+## Convolutional layer - tool for the pattern detection
+
+filters detect patterns
+what is a pattern? edges? curves? in general geometric filters (simple ones when amount of layers is low)
+3 x 3 matrix that goes over each 3 x 3 of our image - dot product evaluation
+
+Convolution layer is a tool that is used to detect certain patterns in images. Usually, the bigger the amount of layer - the more complex patterns become.
+In order to help to achieve this effect CNNs use filters (i.e. kernels, convolutional matrix or masks) to help recognize patters. There are different approaches on which kernels to use.
+There are certain matrices that help recognize edges, curves and other shapes. Other reduce the noise of an image or sharpen it.
+
+> NB! Our CNN does not use any additonal kernels. However, that could have helped improving the accuracy of CNN
+
+In general the process of convolution works as follows. We "scan" an image using ceratain amount of pixel and get sections of an image.
+
+```python
+def get_image_section(self, layer, row_from, row_to, col_from, col_to):
+    sub_section = layer[:, row_from:row_to, col_from:col_to]
+    # -1 leaves for the numpy to detect the shape of the image
+    # so that the end shape would have been compatible with the original one
+    return sub_section.reshape(-1, 1, row_to-row_from, col_to-col_from)
+
+def get_sections(self, layer):
+    sections_of_images = []
+    for row_start in range(layer.shape[1] - self.kernel_rows):
+        for col_start in range(layer.shape[2] - self.kernel_cols):
+            section = self.get_image_section(layer,
+                                              row_start,
+                                              row_start+self.kernel_rows,
+                                              col_start,
+                                              col_start+self.kernel_cols)
+            sections_of_images.append(section)
+    return sections_of_images
+```
+
+After getting those sections we can imagine them being independent images based on which we will make certain predictions in the next layer. Implementation in the code:
+
+```python
+sections_of_images = self.get_sections(layer_0)
+
+# Combine the sections of the images and flatten it
+# to again use in CNN more conveniently
+# flattened input is of format (125000, 9) which basically means
+# that all 3 by 3 sections of picters from a batch are
+# conveniently transformed into a matrix
+flattened_input, es = self.flatten_input(sections=sections_of_images)
+# print("FLATTENED INPUT SHAPE ", flattened_input.shape)
+
+kernel_output = flattened_input.dot(self.kernels)
+# print("KERNEL OUTP SHAPE ", kernel_output.shape)
+# print("kernel reshape ", kernel_output.reshape(es[0], -1).shape)
+# print("Hidden size ", self.hidden_size)
+
+layer_1 = self.tanh(kernel_output.reshape(es[0], -1))
+```
+
+> Code might not be the cleanest and most understandable, due to a lot of formatting (reshaping) of the matrices
+
+And in simple terms that is all that Convolutional layer that. It selects a part of image and makes a single prediction based on this part and passed it to the next layer.
+
 ### Regularization
 
 One of the main challenges of building a CNN is to avoid overfitting. In simple terms - overfitting is a state when our model has learned to recognize ideally training data, however because of that it won't be able to recognize unknown features quite well.
@@ -73,3 +132,101 @@ layer_1_delta *= dropout_mask
 The `dropout_mask` creates a matrix of the same shape as layer 1 consisting 50% of zeros and other 50% of ones, simulating the "turning off" mechanism for the node. We multiply then the product by 2 due to the fact that the weighted sum in the layer 2 will be less by a half, because of the dropout. However, when we actually use the trained network - all the neurons are working and weighted sum will be back to normal. In order to avoid this inequality - multiplication is performed.
 
 `layer_1_delta *= dropout_mask` is perfomed due to the obvious reasons of the way backpropagation algorithm is performed.
+
+## Accuracy report
+
+Testing of the NN data was performed on a limited amount of data as otherwise testing would have taken too much time. Thus, it was chosen to use following base parameters
+
+```python
+training_size=1000,
+iterations=300
+```
+
+Other parameters, such as: alpha coefficient, activation functions, hidden layer size and etc. were changing throughout the testing to find the best suitable combination of parameters that would lead to the greatest accuracy.
+
+Testing case 1:
+
+```python
+# Parameters
+hidden_layer=40,
+alpha=0.001,
+batch_size=200
+
+## Activation function that was used: relu
+
+## Accuracy after 300 iterations: 79.24%
+```
+
+Testing case 2:
+
+```python
+## NB! FALTY TEST BECAUSE OF THE ERRORS IN CODE
+# Parameters
+alpha=0.02,
+batch_size=100,
+hidden_size=100
+
+## Activation function that was used: tanh on hidden layer and softmax on output layer
+
+## Accuracy after 300 iterations: 73.77%
+```
+
+Testing case 3:
+
+```python
+## NB! FALTY TEST BECAUSE OF THE ERRORS IN CODE
+# Parameters
+alpha=0.0015,
+batch_size=200,
+hidden_size=100
+
+## Activation function that was used: tanh on hidden layer and softmax on output layer
+
+## Accuracy after 300 iterations: 48.77%
+''' NB! Reason for such a low accuracy is the fact that alpha coefficient was too low
+    This could have this could have somewhat been useful on whole 60k images, however
+    it is still possible that the model would have been overtrained '''
+```
+
+Testing case 4:
+
+```python
+# Parameters
+alpha=0.025,
+batch_size=200,
+hidden_size=100
+
+## Activation function that was used: tanh on hidden layer and softmax on output layer
+
+## Accuracy after 300 iterations: 86.16%
+```
+
+Testing case 5:
+
+```python
+## NB! FALTY TEST BECAUSE OF THE ERRORS IN CODE
+# Parameters
+alpha=0.04,
+batch_size=200,
+hidden_size=100
+
+## Activation function that was used: tanh on hidden layer and softmax on output layer
+
+## Accuracy after 300 iterations: 73.5%
+```
+
+Testing case 6:
+
+```python
+## NB! This test case differs a lot as convolutional layer was used
+## And in my implementation the hidden layer is omitted and parameters for kernels
+## are hardcoded.
+# Parameters
+alpha=0.025,
+batch_size=200,
+training_size=1000,
+
+## Activation function that was used: tanh on hidden layer and softmax on output layer
+
+## Accuracy after 300 iterations: 73.5%
+```
