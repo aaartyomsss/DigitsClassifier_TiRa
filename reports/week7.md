@@ -25,4 +25,4 @@ Before the demo I would love to clean up the code and improve documentation. An 
 
 # Total time spent this week
 
-Approx: 10 hours
+Approx: 13 hours

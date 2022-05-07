@@ -16,9 +16,8 @@ class Command(BaseCommand):
             raise CommandError('Not all the arguements were provided')
 
         cnn = NativeNeuralNetwork(
-            alpha=0.001,
-            hidden_size=100,
-            batch_size=200,
+            alpha=0.2,
+            batch_size=500,
             training_size=training_size
         )
         cnn.load_data()

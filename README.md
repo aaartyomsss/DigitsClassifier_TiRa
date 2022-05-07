@@ -57,10 +57,28 @@ tira_backend | Starting development server at http://0.0.0.0:8000/
 tira_backend | Quit the server with CONTROL-C.
 ```
 
+Lastly, in order to set up backend properly ensure that you have the data set installed the way it is mentioned above. Then enter backend container by writing in another shell:
+
+```
+docker exec -it tira_backend bash
+```
+
+After that execute the following
+
+```
+python manage.py migrate
+```
+
+And lastly train the model:
+
+```
+python manage.py train_model 1000 300
+```
+
+This command will train the model using 1000 images and 300 iterations. Feel free to play around with the numbers, however be sure that the amount of images is not less that 500 as it is the hardcoded amount of batch size... Which should probably be changed to be a parameter as well
+
 And you are ready to use application! Just use your favourite browser and enter:
 `http://localhost:3000`
-
-> NB! Initial setup might take quite some time. Depending on the system and internet speed - somewhere around 10 minutes. Later when only running `docker-compose up` (after initial build) it will be almost instant. This happens due to the fact that quite a large library for machine learning will be used as a scratchwork and its installation requires quite some time. After self-made implementation will be made, building containers should become much faster.
 
 > NB! As it always happens with windows, some additional settings should be turned on: either Hyper-V or WSL(2) (preferably the latter one). But for more details check out docker installations docs online
 
