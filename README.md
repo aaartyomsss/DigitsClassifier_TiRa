@@ -72,7 +72,7 @@ python manage.py migrate
 And lastly train the model:
 
 ```
-python manage.py train_model 1000 300
+python manage.py train_network 1000 300
 ```
 
 This command will train the model using 1000 images and 300 iterations. Feel free to play around with the numbers, however be sure that the amount of images is not less that 500 as it is the hardcoded amount of batch size... Which should probably be changed to be a parameter as well
