@@ -57,7 +57,7 @@ class NativeNeuralNetwork:
                 # In other words layer zero has shape (batch_size, 28, 28)
                 layer_0 = layer_0.reshape(layer_0.shape[0], 28, 28)
                 
-                # print("Shape of layer 0 ", layer_0.shape)
+
                 # Implementation of convolutional layer
                 sections_of_images = self.get_sections(layer_0)
 
@@ -104,13 +104,13 @@ class NativeNeuralNetwork:
             
             print(f"For iteration {z} was {error}")
 
-            # if error < minimal_error:
-            #     minimal_error = error
-            #     times_error_greater_than_minimum = 0
-            # else:
-            #     times_error_greater_than_minimum += 1
-            #     if times_error_greater_than_minimum == preliminary_stop_after:
-            #         break
+            if error < minimal_error:
+                minimal_error = error
+                times_error_greater_than_minimum = 0
+            else:
+                times_error_greater_than_minimum += 1
+                if times_error_greater_than_minimum == preliminary_stop_after:
+                    break
 
     # This is required for the convolutional layer. We will use this function
     # to select the part of the image.
@@ -136,8 +136,8 @@ class NativeNeuralNetwork:
         # Combine the sections of the images and flatten it 
         # to again use in CNN more conveniently
 
-        # extended_inpit - format (200, 625, 3, 3)
-        # In other words batch (200) of 625 picters (sections that we collected)
+        # extended_input - format (200, 625, 3, 3)
+        # In other words batch (200) of 625 pictures (sections that we collected)
         # each of which has size of 3 x 3
         extended_input = np.concatenate(sections, axis=1)
         es = extended_input.shape
@@ -150,7 +150,6 @@ class NativeNeuralNetwork:
         for i in range(test_length):
             layer_0 = self.test_X[i:i+1]
             layer_0 = layer_0.reshape(layer_0.shape[0], 28, 28)
-
             sections = self.get_sections(layer_0)
             flattened_input, es = self.flatten_input(sections)
             kernel_output = flattened_input.dot(self.kernels)
@@ -182,10 +181,14 @@ class NativeNeuralNetwork:
         return x >= 0 
     
     def predict(self, image):
-        relu = lambda x: (x >= 0) * x 
-        layer_0 = image
-        layer_1 = relu(np.dot(layer_0, self.weights_0_1))
+        layer_0 = np.asarray([image])
+        layer_0 = layer_0.reshape(layer_0.shape[0], 28, 28)
+        sections = self.get_sections(layer_0)
+        flattened_input, es = self.flatten_input(sections)
+        kernel_output = flattened_input.dot(self.kernels)
+        layer_1 = self.tanh(kernel_output.reshape(es[0], -1))
         layer_2 = np.dot(layer_1, self.weights_1_2)
+
         return np.argmax(layer_2)
         
     def _get_saved_network_path(self, test_env=False):

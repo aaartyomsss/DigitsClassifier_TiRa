@@ -16,8 +16,8 @@ class Command(BaseCommand):
             raise CommandError('Not all the arguements were provided')
 
         cnn = NativeNeuralNetwork(
-            alpha=0.2,
-            batch_size=500,
+            alpha=0.02,
+            batch_size=300,
             training_size=training_size
         )
         cnn.load_data()
@@ -25,6 +25,7 @@ class Command(BaseCommand):
         cnn.train_network(iterations)
         end = time.perf_counter()
         accuracy = cnn.test_network()
+        cnn.save_network()
         time_taken = end - start
         self.stdout.write(
             f"Network was trained with an accuracy of {accuracy} and it has taken {time_taken} seconds"

@@ -222,11 +222,25 @@ Testing case 6:
 ## And in my implementation the hidden layer is omitted and parameters for kernels
 ## are hardcoded.
 # Parameters
-alpha=0.025,
+alpha=0.2,
 batch_size=200,
 training_size=1000,
 
 ## Activation function that was used: tanh on hidden layer and softmax on output layer
 
-## Accuracy after 300 iterations: 73.5%
+## Accuracy after 300 iterations: 85.43%
+```
+
+Training model
+
+```python
+## Amount of images = 10000 and 50 iterations
+cnn = NativeNeuralNetwork(
+            alpha=0.02,
+            batch_size=300,
+            training_size=training_size
+      )
+
+
+## Result: Network was trained with an accuracy of 90.7 and it has taken 19688.528750200003 seconds
 ```

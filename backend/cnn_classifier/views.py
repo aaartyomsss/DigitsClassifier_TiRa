@@ -30,14 +30,12 @@ class UploadImageView(APIView):
 
       cnn = NativeNeuralNetwork(
           alpha=0.025,
-          batch_size=200,
+          batch_size=300,
           training_size=1000,
-          hidden_size=100
       )
       cnn.load_network()
-
       ## Our implementation accepts single image
-      result = cnn.predict(data)
+      result = cnn.predict(array(data / 255))
       # Sending back the predicted result
       return Response({'result': result, 'image_name': image_name})
 
